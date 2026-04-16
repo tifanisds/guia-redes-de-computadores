@@ -11,3 +11,19 @@ O intuito deste projeto é disponibilizar um ambiente que promova o estudo dos a
 - JavaScript (básico para interações)
 
 ## Veja o site 🤓
+
+### tela inicial
+![Tela inicial](assets/preview/home.png)
+
+### Fundamentos
+![Fundamentos](assets/preview/fundamentos.png)
+
+### Protocolos
+![Protocolos](assets/preview/protocolos.png)
+
+### Tela inicial da sessão de Telnet e SSH
+![Tela inicial da sessão de Telnet e SSH](assets/preview/home-telnet-ssh.png)
+
+### Vantagens e desvantagens do telnet
+![Vantagens e desvantagens do telnet](assets/preview/vantagens-desvantagens-telnet-ssh.png)
+
