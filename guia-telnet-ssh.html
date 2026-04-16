@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guia de Telnet e SSH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            bg: '#0a0a0f',
+            surface: '#111118',
+            card: '#16161f',
+            border: '#1e1e2e',
+            accent: '#6c63ff',
+            accent2: '#00d4ff',
+            mutext-gray-400,
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.7s ease forwards',
+            'pulse-slow': 'pulse 3s infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0a0a0f; font-family: 'Syne', sans-serif; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #6c63ff55; border-radius: 3px; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .glow-text { text-shadow: 0 0 60px #6c63ff55; }
+    .glow-blue { text-shadow: 0 0 40px #00d4ff44; }
+
+    .card-hover {
+      transition: all 0.3s ease;
+      border: 1px solid #1e1e2e;
+    }
+    .card-hover:hover {
+      border-color: #6c63ff55;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px #6c63ff15;
+    }
+
+    .gradient-border {
+      position: relative;
+    }
+    .gradient-border::before {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #6c63ff, #00d4ff);
+      z-index: -1;
+    }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(#1e1e2e22 1px, transparent 1px),
+        linear-gradient(90deg, #1e1e2e22 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid #1e1e2e;
+      border-radius: 12px;`
+      position: relative;
+      overflow: hidden;
+    }
+    .code-block::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, #6c63ff, #00d4ff, transparent);
+    }
+
+    .tag-telnet { background: #ff6b6b15; color: #ff6b6b; border: 1px solid #ff6b6b30; }
+    .tag-ssh    { background: #6c63ff15; color: #a78bfa; border: 1px solid #6c63ff30; }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, #6c63ff, #00d4ff);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    .pro-icon  { color: #4ade80; }
+    .con-icon  { color: #f87171; }
+
+    .table-row-hover:hover { background: #6c63ff08; }
+
+    .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
+    .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body class="text-gray-200 relative">
+
+  <!-- ======================== NAVBAR ======================== -->
+  <nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0a0a0f]/80 border-b border-[#1e1e2e]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#hero" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6c63ff] to-[#00d4ff] flex items-center justify-center text-white font-mono text-xs font-bold">
+          SSH
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">Guia de Telnet <span class="text-[#6c63ff]">&</span> SSH</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#telnet"     class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Telnet</a>
+        <a href="#ssh"        class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">SSH</a>
+        <a href="#comparacao" class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Comparação</a>
+        <a href="#pratico"    class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Prático</a>
+      </div>
+      <!-- Mobile menu button -->
+      <button onclick="toggleMenu()" class="md:hidden text-gray-400 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3 border-t border-[#1e1e2e] pt-4">
+      <a href="#telnet"     onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Telnet</a>
+      <a href="#ssh"        onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">SSH</a>
+      <a href="#comparacao" onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Comparação</a>
+      <a href="#pratico"    onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Prático</a>
+    </div>
+  </nav>
+
+  <!-- ======================== HERO ======================== -->
+  <section id="hero" class="hero-grid min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+    <!-- Glow blobs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#6c63ff] opacity-5 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#00d4ff] opacity-5 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style="animation-delay:1.5s"></div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#1e1e2e] bg-[#111118] mb-8">
+        <span class="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse"></span>
+        <span class="section-label text-gray-400">Redes de Computadores — Protocolos Remotos</span>
+      </div>
+
+      <h1 class="font-display font-800 text-5xl md:text-7xl text-white leading-none tracking-tight mb-6 glow-text">
+        Acesso Remoto<br/>
+        <span class="bg-gradient-to-r from-[#6c63ff] to-[#00d4ff] bg-clip-text text-transparent">a Servidores</span>
+      </h1>
+
+      <p class="text-white text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        Entenda como os protocolos <strong class="text-[#ff6b6b]">Telnet</strong> e <strong class="text-[#a78bfa]">SSH</strong> revolucionaram a administração remota de sistemas — e por que a segurança faz toda a diferença.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#telnet" class="gradient-border rounded-xl px-8 py-3 font-display font-700 text-white bg-[#111118] hover:bg-[#16161f] transition-all duration-300 hover:scale-105 inline-block">
+          Começar →
+        </a>
+        <a href="#comparacao" class="px-8 py-3 font-display font-700 text-gray-400 hover:text-white border border-[#1e1e2e] hover:border-[#6c63ff55] rounded-xl transition-all duration-300 inline-block">
+          Ver Comparação
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================== TELNET ======================== -->
+  <section id="telnet" class="py-2 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <!-- Label -->
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-telnet px-3 py-1 rounded-full">// 01 — Telnet</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-4 animate-on-scroll">O que é <span class="text-[#ff6b6b]">Telnet</span>?</h2>
+      <p class="text-gray-400 text-lg max-w-full mb-16 animate-on-scroll">
+        Telecommunications Network Protocol — é um protocolo de rede utilizado para permitir o acesso remoto a computadores conectados em uma rede. Por meio deste protocolo, um usuário pode estabelecer uma conexão com um sistema remoto e utilizá-lo como se estivesse diretamente conectado a ele dentro da mesma rede local.
+        <br> <br>
+        Segundo a IBM (2025), o Telnet é um protocolo que permite que um usuário efetue login e utilize um computador remoto como se estivesse fisicamente conectado a ele. Nesse processo, o computador utilizado pelo usuário funciona como cliente Telnet, enquanto o computador remoto atua como servidor Telnet. O protocolo funciona sobre a arquitetura de rede baseada em TCP/IP, que suporta tanto o cliente quanto o servidor durante a comunicação.
+        <br> <br>
+        Uma das principais funcionalidades do Telnet é a capacidade de negociar a transmissão de fluxos de dados entre o cliente e o servidor. Esse mecanismo de negociação permite que ambos os lados iniciem ou respondam a solicitações relacionadas à forma como os dados serão transmitidos durante a sessão, garantindo que a comunicação ocorra de maneira compatível entre os sistemas conectados.
+
+      </p>
+
+      <div class="mb-10 w-full"> 
+        <!-- Contexto histórico -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#ff6b6b15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#ff6b6b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-2xl mb-3">Contexto histórico</h3>
+          <p class="text-gray-400 leading-relaxed text-lg">
+            O protocolo Telnet surgiu durante os primeiros anos do desenvolvimento das redes de computadores, especialmente no contexto da ARPANET, considerada a precursora da internet moderna. Naquele período, pesquisadores e usuários de computadores buscavam maneiras de acessar e utilizar máquinas localizadas em diferentes instituições e centros de pesquisa.
+            <br> <br>
+            De acordo com a Encyclopaedia Britannica, a primeira versão do Telnet surgiu a partir de estudos realizados na ARPANET no final da década de 1960. Na época, os usuários de computadores precisavam de uma forma de conectar remotamente diferentes tipos de máquinas, que muitas vezes utilizavam sistemas e arquiteturas distintas.
+            <br> <br>
+            Em resposta a essa necessidade, um comitê formado por pesquisadores da indústria e do meio acadêmico desenvolveu a primeira proposta do protocolo Telnet em 1971. Posteriormente, em 1983, foi produzida uma versão mais consolidada do protocolo, que passou a ser utilizada em diferentes ambientes de rede para permitir o acesso remoto a sistemas computacionais. Desde então, o Telnet passou por diversas revisões e atualizações ao longo do tempo, acompanhando a evolução das tecnologias de rede.
+
+          </p>
+          <div class="mt-4 flex items-center gap-2 text-xs font-mono text-gray-400">
+            <span class="px-2 py-1 bg-[#ff6b6b10] rounded border border-[#ff6b6b20] text-[#ff6b6b] text-md">RFC 854</span>
+            <span>→</span>
+            <span class="text-md">Padrão de funcionamento publicado em 1983</span>
+          </div>
+        </div>
+      </div>
+
+    <h2 class="font-display font-800 text-2xl md:text-3xl text-white mb-4 animate-on-scroll pt-20 pb-2">Principais características</h2>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-10">
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#6c63ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h6m-6 4h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">Comunicação em texto simples</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">O Telnet transmite todas as informações em texto simples, sem utilizar criptografia. Isso significa que dados como comandos, nomes de usuário e senhas podem ser visualizados caso o tráfego da rede seja interceptado, tornando o protocolo vulnerável a ataques.</p>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#00d4ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h10M7 12h10M7 17h10M3 7h.01M3 12h.01M3 17h.01"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">Porta padrão de funcionamento</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">O Telnet utiliza a <span class="font-bold">porta 23</span> como porta padrão para estabelecer conexões entre cliente e servidor. Essa porta é responsável por permitir a comunicação entre os dispositivos que utilizam o protocolo para realizar sessões de acesso remoto.</p>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#4ade8015] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">Modelo cliente-servidor</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">O funcionamento do Telnet é baseado no <span class="font-bold">modelo cliente-servidor.</span>. O computador do usuário atua como cliente, iniciando a conexão, enquanto o computador remoto funciona como servidor, recebendo os comandos e executando as ações solicitadas.</p>
+        </div>
+      </div>
+
+      <h2 class="font-display font-800 text-2xl md:text-3xl text-white mb-4 animate-on-scroll pt-20 pb-2">Vantagens e desvantagens</h2>
+
+      <!-- Pros e Cons -->
+      <div class="grid md:grid-cols-2 gap-6 animate-on-scroll">
+        <div class="card-hover bg-[#111118] rounded-2xl p-8">
+          <h3 class="font-display font-700 text-white text-2xl mb-5 flex items-center gap-2">
+            <span class="text-[#4ade80]">✓</span> Vantagens
+          </h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl pro-icon mt-0.5 shrink-0">+</span>
+              <span class="text-lg">Simplicidade e leveza: O Telnet possui interface básica, configuração mínima e baixo consumo de recursos, facilitando testes rápidos em redes ou sistemas legados.</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl pro-icon mt-0.5 shrink-0">+</span>
+              <span class="text-lg">Alta compatibilidade: Funciona em praticamente todos os sistemas operacionais, como Windows, Linux e macOS, sem necessidade de instalações complexas.​</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl pro-icon mt-0.5 shrink-0">+</span>
+              <span class="text-lg">Utilidade em diagnósticos: Ideal para verificar conectividade de portas e serviços de rede devido à sua ampla disponibilidade.​</span>
+            </li>
+          </ul>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-8">
+          <h3 class="font-display font-700 text-white text-2xl mb-5 flex items-center gap-2">
+            <span class="text-[#f87171]">✗</span> Desvantagens
+          </h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl con-icon mt-0.5 shrink-0">−</span>
+              <span class="text-lg">Falta de criptografia: Transmite dados, incluindo senhas, em texto plano, expondo a interceptações e ataques man-in-the-middle.</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl con-icon mt-0.5 shrink-0">−</span>
+              <span class="text-lg">Obsolescência e riscos elevados: Substituído pelo SSH por não suportar autenticação forte nem funcionalidades modernas, aumentando vulnerabilidades em ambientes sensíveis.</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl con-icon mt-0.5 shrink-0">-</span>
+              <span class="text-lg">Funcionalidades limitadas: Não oferece suporte a interfaces gráficas ou criptografia avançada, restringindo seu uso atual.​</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Exemplo de comando -->
+      <div class="mt-8 animate-on-scroll pt-20">
+        <p class="section-label text-gray-400 mb-3">Exemplo de comando Telnet</p>
+        <div class="code-block p-6">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-3 h-3 rounded-full bg-[#f87171]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#fbbf24]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#4ade80]"></span>
+            <span class="ml-auto font-mono text-xs text-gray-400">terminal</span>
+          </div>
+          <pre class="font-mono text-sm leading-loose overflow-x-auto"><code><span class="text-gray-400"># Conectar a um host via Telnet</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">telnet 192.168.1.1 23</span>
+
+<span class="text-gray-400">Trying 192.168.1.1...</span>
+<span class="text-gray-400">Connected to 192.168.1.1.</span>
+<span class="text-[#ff6b6b]">⚠  Dados transmitidos sem criptografia!</span>
+
+<span class="text-gray-400"># Uso para teste de porta (comum em diagnóstico)</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">telnet servidor.com 80</span>
+</code></pre>
+        </div>
+      </div>
+
+    <h2 class="font-display font-800 text-2xl md:text-3xl text-white mb-4 animate-on-scroll pt-20 pb-2">Possíveis formas de aplicação</h2>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+    <!-- Testes de Conectividade -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#6c63ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12h18M12 3v18"/>
+            </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Testes de Conectividade</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+            O Telnet pode ser utilizado para verificar a conectividade em redes, permitindo testar se determinadas portas estão abertas e se serviços de rede estão disponíveis e respondendo corretamente.
+            </p>
+        </div>
+
+    <!-- Diagnóstico de Serviços -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#00d4ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6M9 16h6M9 8h6M4 6h16v12H4z"/>
+            </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Diagnóstico de Serviços</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+            Administradores podem usar o Telnet para testar serviços como servidores web ou de e-mail, enviando comandos diretamente ao servidor para verificar se o serviço está funcionando corretamente.
+            </p>
+        </div>
+
+        <!-- Sistemas Legados -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#4ade8015] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Sistemas Legados</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+            Apesar de ser considerado inseguro atualmente, o Telnet ainda pode ser utilizado para administrar sistemas antigos e equipamentos de rede legados que não suportam protocolos mais modernos.
+            </p>
+        </div>
+
+        <!-- Administração Remota -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#6c63ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16l4-4 4 4M8 8l4 4 4-4"/>
+            </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Administração Remota</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+            O SSH permite que administradores acessem servidores remotamente de forma segura para realizar configurações, monitorar recursos do sistema e executar tarefas de manutenção.
+            </p>
+        </div>
+
+        <!-- Gerenciamento de Sistemas Linux -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#00d4ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5h18M3 12h18M3 19h18"/>
+            </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Gerenciamento de Sistemas Linux</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+            O SSH é amplamente utilizado para administrar servidores Linux, permitindo executar comandos remotamente, instalar softwares, atualizar sistemas e gerenciar serviços.
+            </p>
+        </div>
+
+        <!-- Transferência Segura de Arquivos -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#4ade8015] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16M8 8l4-4 4 4M16 16l-4 4-4-4"/>
+            </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Transferência Segura de Arquivos</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+            O SSH também permite a transferência segura de arquivos através de ferramentas como SCP e SFTP, garantindo proteção dos dados durante o envio entre computadores.
+            </p>
+        </div>
+
+    </div>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="h-px bg-gradient-to-r from-transparent via-[#1e1e2e] to-transparent"></div>
+  </div>
+
+  <!-- ======================== SSH ======================== -->
+  <section id="ssh" class="py-24 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-ssh px-3 py-1 rounded-full">// 02 — SSH</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-4 animate-on-scroll">O que é <span class="bg-gradient-to-r from-[#6c63ff] to-[#00d4ff] bg-clip-text text-transparent">SSH</span>?</h2>
+      <p class="text-gray-400 text-lg max-w-full mb-16 animate-on-scroll">
+        O SSH é um protocolo de rede utilizado para estabelecer conexões seguras entre um cliente e um servidor em redes de computadores. Ele foi desenvolvido com o objetivo de permitir o acesso remoto a sistemas de forma protegida, garantindo que os dados transmitidos entre as partes sejam criptografados e não possam ser facilmente interceptados.
+        <br> <br>
+        De acordo com Larissa Gaspar (2022), em glossário publicado pela HostGator, o protocolo SSH foi criado no início da década de 1990 pelo engenheiro de software finlandês Tatu Ylönen
+
+      </p>
+
+      <h2 class="font-display font-800 text-2xl md:text-3xl text-white mb-4 animate-on-scroll pt-20 pb-2">Principais características</h2>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-10">
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#6c63ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">Comunicação criptografada</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">O SSH protege a comunicação entre cliente e servidor utilizando <span class="font-bold">criptografia</span>, garantindo confidencialidade, integridade e autenticação dos dados transmitidos durante a conexão remota.</p>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#00d4ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">Autenticação segura</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">O protocolo SSH utiliza métodos de autenticação mais seguros, como <span class="font-bold">senhas protegidas ou outros mecanismos de verificação</span>, permitindo que apenas usuários autorizados acessem o sistema remoto.</p>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#4ade8015] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">Uso de chaves criptográficas</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">O SSH permite autenticação por <span class="font-bold">chaves criptográficas</span>, utilizando um par de chave pública e chave privada. Esse método aumenta a segurança da conexão e reduz riscos de acesso não autorizado.</p>
+        </div>
+      </div>
+
+      <!-- Como funciona -->
+      <div class="card-hover bg-[#111118] rounded-2xl p-8 mb-6 animate-on-scroll">
+        <h3 class="font-display font-700 text-white text-xl mb-6">Como o SSH estabelece uma conexão segura</h3>
+        <div class="grid md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-full bg-[#6c63ff20] border border-[#6c63ff40] flex items-center justify-center font-mono font-bold text-[#a78bfa] text-lg mx-auto mb-3">1</div>
+            <p class="text-xs text-gray-400 leading-relaxed">Cliente inicia conexão TCP na porta 22</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-full bg-[#6c63ff20] border border-[#6c63ff40] flex items-center justify-center font-mono font-bold text-[#a78bfa] text-lg mx-auto mb-3">2</div>
+            <p class="text-xs text-gray-400 leading-relaxed">Troca de chaves (Diffie-Hellman) para criar canal seguro</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-full bg-[#6c63ff20] border border-[#6c63ff40] flex items-center justify-center font-mono font-bold text-[#a78bfa] text-lg mx-auto mb-3">3</div>
+            <p class="text-xs text-gray-400 leading-relaxed">Autenticação do usuário (senha ou chave pública)</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-full bg-[#00d4ff20] border border-[#00d4ff40] flex items-center justify-center font-mono font-bold text-[#00d4ff] text-lg mx-auto mb-3">✓</div>
+            <p class="text-xs text-gray-400 leading-relaxed">Sessão cifrada estabelecida com sucesso</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="font-display font-800 text-2xl md:text-3xl text-white mb-4 animate-on-scroll pt-20 pb-2">Vantagens e desvantagens</h2>
+
+      <!-- Pros e Cons -->
+      <div class="grid md:grid-cols-2 gap-6 animate-on-scroll">
+        <div class="card-hover bg-[#111118] rounded-2xl p-8">
+          <h3 class="font-display font-700 text-white text-2xl mb-5 flex items-center gap-2">
+            <span class="text-[#4ade80]">✓</span> Vantagens
+          </h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl pro-icon mt-0.5 shrink-0">+</span>
+              <span class="text-lg">Segurança avançada: Utiliza criptografia de ponta a ponta para proteger dados, senhas e comandos contra interceptações, com suporte a autenticação por chaves públicas/privadas.</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl pro-icon mt-0.5 shrink-0">+</span>
+              <span class="text-lg">Versatilidade: Permite túneis seguros (port forwarding), transferências de arquivos via SCP/SFTP e suporte a sessões gráficas com X11 forwarding.</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl pro-icon mt-0.5 shrink-0">+</span>
+              <span class="text-lg">Compatibilidade ampla: Disponível nativamente em Linux, Windows, macOS e outros sistemas, facilitando gerenciamento remoto em ambientes heterogêneos.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-8">
+          <h3 class="font-display font-700 text-white text-2xl mb-5 flex items-center gap-2">
+            <span class="text-[#f87171]">✗</span> Desvantagens
+          </h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl con-icon mt-0.5 shrink-0">−</span>
+              <span class="text-lg">Configuração complexa: Exige setup inicial detalhado, como geração de chaves e edição de arquivos de configuração (ex.: sshd_config), com curva de aprendizado elevada para iniciantes.</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl con-icon mt-0.5 shrink-0">−</span>
+              <span class="text-lg">Consumo de recursos: A criptografia pode demandar mais CPU e largura de banda, impactando desempenho em transferências intensas ou hardware antigo.​</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-gray-400">
+              <span class="text-xl con-icon mt-0.5 shrink-0">-</span>
+              <span class="text-lg">Vulnerabilidades potenciais: Suscetível a ataques de força bruta se senhas fracas forem usadas, demandando medidas extras como fail2ban.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Exemplo de comando -->
+      <div class="animate-on-scroll pt-20">
+        <p class="section-label text-gray-400 mb-3">Exemplos de comandos SSH</p>
+        <div class="code-block p-6">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-3 h-3 rounded-full bg-[#f87171]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#fbbf24]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#4ade80]"></span>
+            <span class="ml-auto font-mono text-xs text-gray-400">terminal</span>
+          </div>
+          <pre class="font-mono text-sm leading-loose overflow-x-auto"><code><span class="text-gray-400"># Conectar via SSH com usuário e host</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh usuario@192.168.1.1</span>
+
+<span class="text-gray-400"># Conectar em porta customizada</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh -p 2222 usuario@servidor.com</span>
+
+<span class="text-gray-400"># Usar chave privada para autenticação</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh -i ~/.ssh/id_rsa usuario@servidor.com</span>
+
+<span class="text-gray-400"># Copiar arquivo via SCP (Secure Copy)</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">scp arquivo.txt usuario@servidor.com:/home/usuario/</span>
+</code></pre>
+        </div>
+      </div>
+
+      <h2 class="font-display font-800 text-2xl md:text-3xl text-white mb-4 animate-on-scroll pt-20 pb-2">Possíveis formas de aplicação</h2>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+    <!-- Testes de Conectividade -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#6c63ff15] flex items-center justify-center mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 10h16M4 14h16M4 18h16M6 6v12M18 6v12"/>
+                </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Administração remota de servidores</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+                O SSH permite que administradores acessem servidores remotamente para realizar configurações, instalar softwares, monitorar o sistema e executar tarefas de manutenção com segurança.
+            </p>
+        </div>
+
+    <!-- Diagnóstico de Serviços -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#00d4ff15] flex items-center justify-center mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16v12H4zM8 10l-2 2 2 2M11 14h5"/>
+                </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Gerenciamento de sistemas Linux</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+                Em sistemas baseados em Linux e Unix, o SSH é utilizado para executar comandos remotamente através do terminal, facilitando a administração de servidores sem acesso físico.
+            </p>
+        </div>
+
+        <!-- Sistemas Legados -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+            <div class="w-10 h-10 rounded-xl bg-[#4ade8015] flex items-center justify-center mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v12M8 7l4-4 4 4M12 21v-8M16 17l-4 4-4-4"/>
+                </svg>
+            </div>
+
+            <h3 class="font-display font-700 text-white text-lg mb-2">Transferência segura de arquivos</h3>
+
+            <p class="text-gray-400 text-lg leading-relaxed">
+                O SSH também permite a transferência segura de arquivos utilizando ferramentas como <span class="font-bold">Secure Copy Protocol</span> (SCP) e <span class="font-bold">SSH File Transfer Protocol</span> (SFTP), protegendo os dados durante o envio entre computadores.
+            </p>
+        </div>
+
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="h-px bg-gradient-to-r from-transparent via-[#1e1e2e] to-transparent"></div>
+  </div>
+
+  <!-- ======================== COMPARAÇÃO ======================== -->
+  <section id="comparacao" class="py-24">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label bg-[#ffffff08] text-gray-400 border border-[#1e1e2e] px-3 py-1 rounded-full">// 03 — Comparação</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-4 animate-on-scroll">
+        <span class="text-[#ff6b6b]">Telnet</span> vs <span class="bg-gradient-to-r from-[#6c63ff] to-[#00d4ff] bg-clip-text text-transparent">SSH</span>
+      </h2>
+      <p class="text-gray-400 text-lg max-w-2xl mb-14 animate-on-scroll">
+        Uma análise direta dos dois protocolos em critérios essenciais para administração de sistemas.
+      </p>
+
+      <!-- Tabela -->
+      <div class="rounded-2xl overflow-hidden border border-[#1e1e2e] animate-on-scroll">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-[#111118] border-b border-[#1e1e2e]">
+              <th class="text-left px-6 py-4 font-display font-700 text-gray-400 text-xs uppercase tracking-wider w-1/3">Critério</th>
+              <th class="text-center px-6 py-4 font-display font-700 text-[#ff6b6b] text-xs uppercase tracking-wider w-1/3">Telnet</th>
+              <th class="text-center px-6 py-4 font-display font-700 text-[#a78bfa] text-xs uppercase tracking-wider w-1/3">SSH</th>
+            </tr>
+          </thead>
+          <tbody class="bg-[#0d0d14]">
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Segurança</td>
+              <td class="px-6 py-5 text-center"><span class="inline-flex items-center gap-1.5 text-[#f87171]"><span class="w-2 h-2 bg-[#f87171] rounded-full"></span>Inseguro</span></td>
+              <td class="px-6 py-5 text-center"><span class="inline-flex items-center gap-1.5 text-[#4ade80]"><span class="w-2 h-2 bg-[#4ade80] rounded-full"></span>Altamente seguro</span></td>
+            </tr>
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Criptografia</td>
+              <td class="px-6 py-5 text-center font-mono text-[#f87171]">Nenhuma</td>
+              <td class="px-6 py-5 text-center font-mono text-[#4ade80]">AES, ChaCha20, RSA</td>
+            </tr>
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Porta padrão</td>
+              <td class="px-6 py-5 text-center font-mono text-[#fbbf24]">TCP 23</td>
+              <td class="px-6 py-5 text-center font-mono text-[#a78bfa]">TCP 22</td>
+            </tr>
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Autenticação</td>
+              <td class="px-6 py-5 text-center text-gray-400 text-xs">Usuário/senha em plaintext</td>
+              <td class="px-6 py-5 text-center text-gray-400 text-xs">Senha cifrada, chaves públicas, certificados</td>
+            </tr>
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Integridade de dados</td>
+              <td class="px-6 py-5 text-center"><span class="text-[#f87171]">✗ Sem verificação</span></td>
+              <td class="px-6 py-5 text-center"><span class="text-[#4ade80]">✓ MAC (HMAC-SHA2)</span></td>
+            </tr>
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Transferência de arquivos</td>
+              <td class="px-6 py-5 text-center"><span class="text-[#f87171]">✗ Não suportada</span></td>
+              <td class="px-6 py-5 text-center"><span class="text-[#4ade80]">✓ SCP / SFTP</span></td>
+            </tr>
+            <tr class="table-row-hover border-b border-[#1e1e2e] transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Ano de criação</td>
+              <td class="px-6 py-5 text-center font-mono text-gray-400">1969</td>
+              <td class="px-6 py-5 text-center font-mono text-gray-400">1995</td>
+            </tr>
+            <tr class="table-row-hover transition-colors">
+              <td class="px-6 py-5 font-display font-600 text-gray-400">Uso atual</td>
+              <td class="px-6 py-5 text-center text-gray-400 text-xs">Redes isoladas, diagnóstico, sistemas legados</td>
+              <td class="px-6 py-5 text-center text-gray-400 text-xs">Padrão de mercado em toda infraestrutura moderna</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Verdict box -->
+      <div class="mt-8 p-6 rounded-2xl bg-gradient-to-r from-[#6c63ff10] to-[#00d4ff10] border border-[#6c63ff30] animate-on-scroll">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#00d4ff] flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-display font-700 text-white mb-1">Conclusão</h4>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Em ambientes de produção e redes públicas, o <strong class="text-[#a78bfa]">SSH é sempre a escolha correta</strong>. O Telnet só deve ser considerado em redes completamente isoladas, para sistemas legados que não suportam SSH, ou para fins educacionais e de diagnóstico controlado.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="h-px bg-gradient-to-r from-transparent via-[#1e1e2e] to-transparent"></div>
+  </div>
+
+  <!-- ======================== PRÁTICO ======================== -->
+  <section id="pratico" class="py-24">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label bg-[#ffffff08] text-gray-400 border border-[#1e1e2e] px-3 py-1 rounded-full">// 04 — Prático</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-4 animate-on-scroll">Exemplo Prático</h2>
+      <p class="text-gray-400 text-lg max-w-3xl mb-14 animate-on-scroll">
+        Um guia completo para configurar e usar SSH com boas práticas de segurança — do zero até a conexão com chave pública.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- Bloco 1: Gerar chave -->
+        <div class="animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-7 h-7 rounded-lg bg-[#6c63ff] flex items-center justify-center font-mono text-xs font-bold text-white">1</span>
+            <h3 class="font-display font-700 text-white">Gerar par de chaves SSH</h3>
+          </div>
+          <div class="code-block p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f87171]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#fbbf24]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80]"></span>
+            </div>
+            <pre class="font-mono text-xs leading-loose overflow-x-auto"><code><span class="text-gray-400"># Gerar chave Ed25519 (recomendada)</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh-keygen -t ed25519 -C "email@exemplo.com"</span>
+
+<span class="text-gray-400">Generating public/private ed25519 key pair.</span>
+<span class="text-gray-400">Enter file (/home/user/.ssh/id_ed25519): </span>
+<span class="text-gray-400">Enter passphrase (empty for no passphrase): </span>
+
+<span class="text-[#4ade80]"># Arquivos criados:</span>
+<span class="text-[#a78bfa]">~/.ssh/id_ed25519</span>      <span class="text-gray-400"># Chave PRIVADA</span>
+<span class="text-[#00d4ff]">~/.ssh/id_ed25519.pub</span>  <span class="text-gray-400"># Chave PÚBLICA</span>
+</code></pre>
+          </div>
+        </div>
+
+        <!-- Bloco 2: Copiar chave -->
+        <div class="animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-7 h-7 rounded-lg bg-[#6c63ff] flex items-center justify-center font-mono text-xs font-bold text-white">2</span>
+            <h3 class="font-display font-700 text-white">Copiar chave pública para o servidor</h3>
+          </div>
+          <div class="code-block p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f87171]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#fbbf24]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80]"></span>
+            </div>
+            <pre class="font-mono text-xs leading-loose overflow-x-auto"><code><span class="text-gray-400"># Método automático (Linux/macOS)</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh-copy-id usuario@servidor.com</span>
+
+<span class="text-gray-400"># Método manual</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">cat ~/.ssh/id_ed25519.pub | ssh usuario@servidor.com \
+  "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"</span>
+
+<span class="text-gray-400"># Ajustar permissões no servidor</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys</span>
+</code></pre>
+          </div>
+        </div>
+
+        <!-- Bloco 3: Conectar -->
+        <div class="animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-7 h-7 rounded-lg bg-[#00d4ff] flex items-center justify-center font-mono text-xs font-bold text-white">3</span>
+            <h3 class="font-display font-700 text-white">Conectar com chave pública</h3>
+          </div>
+          <div class="code-block p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f87171]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#fbbf24]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80]"></span>
+            </div>
+            <pre class="font-mono text-xs leading-loose overflow-x-auto"><code><span class="text-gray-400"># Conexão usando chave (sem senha!)</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh usuario@servidor.com</span>
+
+<span class="text-[#00d4ff]">Welcome to Ubuntu 22.04 LTS</span>
+<span class="text-gray-400">Last login: Sat Mar 14 10:30:00 2026</span>
+
+<span class="text-[#4ade80]">usuario@servidor:~$</span> <span class="text-white">_</span>
+
+<span class="text-gray-400"># Conexão bem-sucedida e segura! ✓</span>
+</code></pre>
+          </div>
+        </div>
+
+        <!-- Bloco 4: Config -->
+        <div class="animate-on-scroll">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-7 h-7 rounded-lg bg-[#00d4ff] flex items-center justify-center font-mono text-xs font-bold text-white">4</span>
+            <h3 class="font-display font-700 text-white">Configurar ~/.ssh/config</h3>
+          </div>
+          <div class="code-block p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f87171]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#fbbf24]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80]"></span>
+            </div>
+            <pre class="font-mono text-xs leading-loose overflow-x-auto"><code><span class="text-gray-400"># ~/.ssh/config</span>
+<span class="text-[#a78bfa]">Host</span> <span class="text-[#00d4ff]">meuservidor</span>
+    <span class="text-[#a78bfa]">HostName</span>     <span class="text-white">192.168.1.100</span>
+    <span class="text-[#a78bfa]">User</span>         <span class="text-white">joao</span>
+    <span class="text-[#a78bfa]">Port</span>         <span class="text-white">22</span>
+    <span class="text-[#a78bfa]">IdentityFile</span> <span class="text-white">~/.ssh/id_ed25519</span>
+
+<span class="text-gray-400"># Agora basta digitar:</span>
+<span class="text-[#4ade80]">$</span> <span class="text-white">ssh meuservidor</span>
+</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dicas de segurança -->
+      <div class="mt-10 p-8 rounded-2xl bg-[#111118] border border-[#1e1e2e] animate-on-scroll">
+        <h3 class="font-display font-700 text-white text-xl mb-6">
+          <span class="text-[#4ade80]">⚡</span> Boas práticas de segurança SSH
+        </h3>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="flex items-start gap-3">
+            <span class="text-[#4ade80] font-bold shrink-0">01</span>
+            <p class="text-gray-400 text-sm leading-relaxed">Desabilite o login por senha no servidor (<code class="text-[#a78bfa] bg-[#6c63ff10] px-1 rounded">PasswordAuthentication no</code>) e use apenas chaves</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-[#4ade80] font-bold shrink-0">02</span>
+            <p class="text-gray-400 text-sm leading-relaxed">Mude a porta padrão 22 para reduzir bots de varredura automática (<code class="text-[#a78bfa] bg-[#6c63ff10] px-1 rounded">Port 2222</code>)</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-[#4ade80] font-bold shrink-0">03</span>
+            <p class="text-gray-400 text-sm leading-relaxed">Desabilite login como root (<code class="text-[#a78bfa] bg-[#6c63ff10] px-1 rounded">PermitRootLogin no</code>) e use <code class="text-[#a78bfa] bg-[#6c63ff10] px-1 rounded">sudo</code> quando necessário</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
+        <a href="/referencias.html" class="gradient-border rounded-xl px-8 py-3 font-display font-700 text-white bg-[#111118] hover:bg-[#16161f] transition-all duration-300 hover:scale-105 inline-block">
+          Ver referências da pesquisa
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== FOOTER ======================== -->
+  <footer class="border-t border-[#1e1e2e] py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="text-center md:text-left">
+          <div class="font-display font-800 text-white text-lg mb-1">Guia de Telnet & SSH</div>
+          <p class="text-gray-400 text-sm">Trabalho Acadêmico — Protocolos de Acesso Remoto</p>
+          <p class="text-gray-400 text-sm">Alunos: Andrei Carvalho, João Pedro Bastian e Tífani Sá</p>
+        </div>
+        <div class="text-center">
+          <p class="text-gray-400 text-sm">Redes de Computadores</p>
+          <p class="font-mono text-[#6c63ff] text-sm mt-1">2026 · Sistemas de informação</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse"></div>
+          <span class="font-mono text-xs text-gray-400">Conexão segura via HTTPS</span>
+        </div>
+      </div>
+      <div class="mt-8 pt-6 border-t border-[#1e1e2e] text-center">
+        <p class="font-mono text-xs text-gray-400">
+          Trabalho acadêmico • Redes de computadores • UNIME - 2026
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    function toggleMenu() {
+      const m = document.getElementById('mobile-menu');
+      m.classList.toggle('hidden');
+    }
+
+    // Scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+    // Active nav highlight
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(link => {
+        link.classList.remove('text-white');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('text-white');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
