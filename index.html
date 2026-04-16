@@ -111,6 +111,7 @@
     .tag-smtp { background: #f97316/10; color: #fb923c; border: 1px solid #f97316/30; }
     .tag-pop3 { background: #3b82f6/10; color: #60a5fa; border: 1px solid #3b82f6/30; }
     .tag-imap { background: #8b5cf6/10; color: #a78bfa; border: 1px solid #8b5cf6/30; }
+    .tag-http { background: #06b6d4/10; color: #06b6d4; border: 1px solid #06b6d4/30; }
     .tag-dns { background: #ec4899/10; color: #f472b6; border: 1px solid #ec4899/30; }
     .tag-telnet { background: #ff6b6b/10; color: #ff6b6b; border: 1px solid #ff6b6b/30; }
     .tag-ssh { background: #10b981/10; color: #6ee7b7; border: 1px solid #10b981/30; }
@@ -314,6 +315,25 @@
           <a href="arquivos-de-projetos/protocolos-de-email/Arquitetura_de_Protocolos_de_E-mail.pdf" target="_blank" class="inline-block mt-3 text-[#a78bfa] text-xs font-semibold hover:underline">Ver guia completo →</a>
         </div>
 
+        <!-- HTTP & HTTPS -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#06b6d4]/15 flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#06b6d4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <span class="tag-http px-2 py-1 rounded text-xs mb-3 inline-block">Protocolo</span>
+          <h3 class="font-display font-700 text-white text-xl mb-2">HTTP & HTTPS</h3>
+          <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+            HyperText Transfer Protocol — protocolo utilizado para transferência de dados na Web. O HTTPS é a versão segura com criptografia SSL/TLS. Essenciais para navegação e acesso a serviços web.
+          </p>
+          <div class="text-xs text-gray-500">
+            <p><span class="font-semibold">Porta padrão:</span> 80 (HTTP), 443 (HTTPS)</p>
+            <p><span class="font-semibold">Função:</span> Transferência de dados web</p>
+          </div>
+          <a href="arquivos-de-projetos/HTTP_and_HTTPS_Evolution.pdf" target="_blank" class="inline-block mt-3 text-[#06b6d4] text-xs font-semibold hover:underline">Ver guia completo →</a>
+        </div>
+
         <!-- DNS -->
         <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
           <div class="w-10 h-10 rounded-xl bg-[#ec4899]/15 flex items-center justify-center mb-5">
@@ -379,79 +399,6 @@
   <div class="max-w-6xl mx-auto px-6">
     <div class="h-px bg-gradient-to-r from-transparent via-[#1e1e2e] to-transparent"></div>
   </div>
-
-  <!-- ======================== COMPARAÇÃO ======================== -->
-  <section id="comparacao" class="py-24 relative">
-    <div class="max-w-6xl mx-auto px-6">
-      <!-- Label -->
-      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
-        <span class="section-label tag-redes px-3 py-1 rounded-full">// 04 — COMPARAÇÃO</span>
-      </div>
-      
-      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-12 animate-on-scroll">
-        Comparação de <span class="bg-gradient-to-r from-[#6c63ff] to-[#00d4ff] bg-clip-text text-transparent">Protocolos</span>
-      </h2>
-
-      <!-- Tabela de comparação -->
-      <div class="animate-on-scroll overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b border-[#1e1e2e]">
-              <th class="text-left py-4 px-4 text-gray-300 font-display font-700">Protocolo</th>
-              <th class="text-left py-4 px-4 text-gray-300 font-display font-700">Função Principal</th>
-              <th class="text-left py-4 px-4 text-gray-300 font-display font-700">Porta</th>
-              <th class="text-left py-4 px-4 text-gray-300 font-display font-700">Segurança</th>
-              <th class="text-left py-4 px-4 text-gray-300 font-display font-700">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b border-[#1e1e2e] hover:bg-[#6c63ff08] transition-colors">
-              <td class="py-4 px-4 text-gray-400 font-semibold">SMTP</td>
-              <td class="py-4 px-4 text-gray-400">Envio de emails</td>
-              <td class="py-4 px-4 text-gray-400">25, 465, 587</td>
-              <td class="py-4 px-4"><span class="text-yellow-400">Variável</span></td>
-              <td class="py-4 px-4"><span class="text-green-400 font-semibold">Ativo</span></td>
-            </tr>
-            <tr class="border-b border-[#1e1e2e] hover:bg-[#6c63ff08] transition-colors">
-              <td class="py-4 px-4 text-gray-400 font-semibold">POP3</td>
-              <td class="py-4 px-4 text-gray-400">Recebimento de emails</td>
-              <td class="py-4 px-4">110, 995</td>
-              <td class="py-4 px-4"><span class="text-yellow-400">Variável</span></td>
-              <td class="py-4 px-4"><span class="text-yellow-400 font-semibold">Em declínio</span></td>
-            </tr>
-            <tr class="border-b border-[#1e1e2e] hover:bg-[#6c63ff08] transition-colors">
-              <td class="py-4 px-4 text-gray-400 font-semibold">IMAP</td>
-              <td class="py-4 px-4 text-gray-400">Acesso remoto a emails</td>
-              <td class="py-4 px-4">143, 993</td>
-              <td class="py-4 px-4"><span class="text-yellow-400">Variável</span></td>
-              <td class="py-4 px-4"><span class="text-green-400 font-semibold">Preferido</span></td>
-            </tr>
-            <tr class="border-b border-[#1e1e2e] hover:bg-[#6c63ff08] transition-colors">
-              <td class="py-4 px-4 text-gray-400 font-semibold">DNS</td>
-              <td class="py-4 px-4 text-gray-400">Resolução de nomes</td>
-              <td class="py-4 px-4">53</td>
-              <td class="py-4 px-4"><span class="text-yellow-400">Básica</span></td>
-              <td class="py-4 px-4"><span class="text-green-400 font-semibold">Essencial</span></td>
-            </tr>
-            <tr class="border-b border-[#1e1e2e] hover:bg-[#ff6b6b08] transition-colors">
-              <td class="py-4 px-4 text-gray-400 font-semibold">Telnet</td>
-              <td class="py-4 px-4 text-gray-400">Acesso remoto</td>
-              <td class="py-4 px-4">23</td>
-              <td class="py-4 px-4"><span class="text-red-400">Nenhuma</span></td>
-              <td class="py-4 px-4"><span class="text-red-400 font-semibold">Obsoleto</span></td>
-            </tr>
-            <tr class="hover:bg-[#10b98108] transition-colors">
-              <td class="py-4 px-4 text-gray-400 font-semibold">SSH</td>
-              <td class="py-4 px-4 text-gray-400">Acesso remoto seguro</td>
-              <td class="py-4 px-4">22</td>
-              <td class="py-4 px-4"><span class="text-green-400">Forte</span></td>
-              <td class="py-4 px-4"><span class="text-green-400 font-semibold">Padrão</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
 
   <!-- Footer -->
   <footer class="border-t border-[#1e1e2e] py-12 relative">
