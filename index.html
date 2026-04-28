@@ -116,6 +116,8 @@
     .tag-telnet { background: #ff6b6b/10; color: #ff6b6b; border: 1px solid #ff6b6b/30; }
     .tag-ssh { background: #10b981/10; color: #6ee7b7; border: 1px solid #10b981/30; }
     .tag-ftp { background: #3b82f6/10; color: #60a5fa; border: 1px solid #3b82f6/30; }
+    .tag-ipv4 { background: #8b5cf6/10; color: #a78bfa; border: 1px solid #8b5cf6/30; }
+    .tag-ipv6 { background: #d946ef/10; color: #f0abfc; border: 1px solid #d946ef/30; }
 
     .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
     .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
@@ -407,7 +409,25 @@
           </div>
           <a href="arquivos-de-projetos/FTP.pdf" class="inline-block mt-3 text-[#60a5fa] text-xs font-semibold hover:underline">Ver guia completo →</a>
         </div>
-    </div>
+
+        <!-- IPv4 & IPv6 -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#d946ef] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.658 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+          </div>
+          <span class="tag-ipv4 px-2 py-1 rounded text-xs mb-3 inline-block">Protocolo</span>
+          <h3 class="font-display font-700 text-white text-xl mb-2">IPv4 & IPv6</h3>
+          <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+            Protocolos de endereçamento de rede. IPv4 usa 32 bits (4,3 bilhões de endereços), enquanto IPv6 usa 128 bits com endereços ilimitados para o futuro.
+          </p>
+          <div class="text-xs text-gray-500">
+            <p><span class="font-semibold">Notação:</span> IPv4: 192.168.1.1, IPv6: 2001:db8::1</p>
+            <p><span class="font-semibold">Função:</span> Endereçamento de rede</p>
+          </div>
+          <a href="arquivos-de-projetos/ipv6_e_ipv4.pdf" class="inline-block mt-3 text-[#a78bfa] text-xs font-semibold hover:underline">Ver guia completo →</a>
+        </div>
   </section>
 
   <!-- Divisor -->
@@ -446,6 +466,7 @@
             <li><a href="arquivos-de-projetos/dns.pdf" target="_blank" class="text-gray-400 hover:text-white transition-colors">DNS</a></li>
             <li><a href="guia-telnet-ssh.html" class="text-gray-400 hover:text-white transition-colors">Telnet & SSH</a></li>
             <li><a href="guia-ftp.html" class="text-gray-400 hover:text-white transition-colors">FTP & SFTP</a></li>
+            <li><a href="guia-ipv4-ipv6.html" class="text-gray-400 hover:text-white transition-colors">IPv4 & IPv6</a></li>
             <li><a href="referencias.html" class="text-gray-400 hover:text-white transition-colors">Referências</a></li>
           </ul>
         </div>
