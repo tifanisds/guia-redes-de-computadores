@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guia de Redes Móveis - 5G</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            bg: '#0a0a0f',
+            surface: '#111118',
+            card: '#16161f',
+            border: '#1e1e2e',
+            accent: '#6c63ff',
+            accent2: '#00d4ff',
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.7s ease forwards',
+            'pulse-slow': 'pulse 3s infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0a0a0f; font-family: 'Syne', sans-serif; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #6c63ff55; border-radius: 3px; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .glow-text { text-shadow: 0 0 60px #6c63ff55; }
+    .glow-blue { text-shadow: 0 0 40px #00d4ff44; }
+
+    .card-hover {
+      transition: all 0.3s ease;
+      border: 1px solid #1e1e2e;
+    }
+    .card-hover:hover {
+      border-color: #6c63ff55;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px #6c63ff15;
+    }
+
+    .gradient-border {
+      position: relative;
+    }
+    .gradient-border::before {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #6c63ff, #00d4ff);
+      z-index: -1;
+    }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(#1e1e2e22 1px, transparent 1px),
+        linear-gradient(90deg, #1e1e2e22 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid #1e1e2e;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .code-block::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, #6c63ff, #00d4ff, transparent);
+    }
+
+    .tag-5g { background: #00d4ff15; color: #00d4ff; border: 1px solid #00d4ff30; }
+    .tag-mobile { background: #6c63ff15; color: #a78bfa; border: 1px solid #6c63ff30; }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, #6c63ff, #00d4ff);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    .pro-icon  { color: #4ade80; }
+    .con-icon  { color: #f87171; }
+
+    .table-row-hover:hover { background: #6c63ff08; }
+
+    .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
+    .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+
+    .generation-card {
+      position: relative;
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid #1e1e2e;
+      background: #111118;
+      transition: all 0.3s ease;
+    }
+    .generation-card:hover {
+      border-color: #6c63ff55;
+      transform: translateY(-8px);
+    }
+  </style>
+</head>
+<body class="text-gray-200 relative">
+
+  <!-- ======================== NAVBAR ======================== -->
+  <nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0a0a0f]/80 border-b border-[#1e1e2e]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#hero" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00d4ff] to-[#6c63ff] flex items-center justify-center text-white font-mono text-xs font-bold">
+          5G
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">Redes Móveis <span class="text-[#00d4ff]">&</span> 5G</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#contexto"    class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Contexto</a>
+        <a href="#evolucao"    class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Evolução</a>
+        <a href="#5g"          class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">5G</a>
+        <a href="#aplicacoes"  class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Aplicações</a>
+        <a href="#vantagens"   class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Vantagens</a>
+      </div>
+      <!-- Mobile menu button -->
+      <button onclick="toggleMenu()" class="md:hidden text-gray-400 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3 border-t border-[#1e1e2e] pt-4">
+      <a href="#contexto"    onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Contexto</a>
+      <a href="#evolucao"    onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Evolução</a>
+      <a href="#5g"          onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">5G</a>
+      <a href="#aplicacoes"  onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Aplicações</a>
+      <a href="#vantagens"   onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Vantagens</a>
+    </div>
+  </nav>
+
+  <!-- ======================== HERO ======================== -->
+  <section id="hero" class="hero-grid min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+    <!-- Glow blobs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00d4ff] opacity-5 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#6c63ff] opacity-5 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style="animation-delay:1.5s"></div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#1e1e2e] bg-[#111118] mb-8">
+        <span class="w-2 h-2 rounded-full bg-[#00d4ff] animate-pulse"></span>
+        <span class="section-label text-gray-400">Redes de Computadores — Redes Móveis</span>
+      </div>
+
+      <h1 class="font-display font-800 text-5xl md:text-7xl text-white leading-none tracking-tight mb-6 glow-text">
+        Redes Móveis<br/>
+        <span class="bg-gradient-to-r from-[#00d4ff] to-[#6c63ff] bg-clip-text text-transparent">A Revolução 5G</span>
+      </h1>
+
+      <p class="text-white text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        Descubra a evolução das redes móveis, entenda como o <strong class="text-[#00d4ff]">5G</strong> revoluciona a conectividade e veja o futuro do <strong class="text-[#6c63ff]">6G</strong> se aproximando.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#contexto" class="gradient-border rounded-xl px-8 py-3 font-display font-700 text-white bg-[#111118] hover:bg-[#16161f] transition-all duration-300 hover:scale-105 inline-block">
+          Começar →
+        </a>
+        <a href="#5g" class="px-8 py-3 font-display font-700 text-gray-400 hover:text-white border border-[#1e1e2e] hover:border-[#6c63ff55] rounded-xl transition-all duration-300 inline-block">
+          Entender 5G
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================== CONTEXO HISTÓRICO ======================== -->
+  <section id="contexto" class="py-32 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <!-- Label -->
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-mobile px-3 py-1 rounded-full">// 01 — Contexto</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-4 animate-on-scroll">Contextualização <span class="text-[#00d4ff]">Histórica</span></h2>
+
+      <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll mb-16">
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          <strong class="text-white">Vamos imaginar que estamos nos anos 80…</strong>
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          Você sai de casa pra dar uma caminhada tranquila. No meio do caminho, vem aquele pensamento: <em class="italic">"será que eu desliguei o gás?"</em>
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          A preocupação bate na hora. Então você pensa: <em class="italic">"vou ligar pra minha mãe pra avisar…"</em>
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          Mas tem um problema. <strong class="text-white">Você não tem celular.</strong> O único telefone disponível é o fixo… dentro da sua casa. E naquele momento, na rua… você simplesmente não tem como se comunicar.
+        </p>
+        <div class="bg-[#6c63ff10] border border-[#6c63ff30] rounded-xl p-6 mt-6">
+          <p class="text-white text-lg font-display font-700 mb-2">❓ Pergunta para você…</p>
+          <p class="text-gray-300 text-lg">
+            Vocês conseguem se imaginar vivendo assim hoje? Sem poder mandar mensagem, sem ligar, sem internet… completamente desconectados fora de casa?
+          </p>
+        </div>
+        <p class="text-gray-400 text-lg leading-relaxed mt-6">
+          <strong class="text-[#00d4ff]">Foi exatamente essa necessidade, de se comunicar em qualquer lugar, a qualquer momento, que deu origem às redes móveis.</strong>
+        </p>
+      </div>
+
+      <h2 class="font-display font-800 text-3xl md:text-4xl text-white mb-8 animate-on-scroll">O que é uma <span class="text-[#6c63ff]">Rede Móvel</span>?</h2>
+
+      <p class="text-gray-400 text-lg max-w-full mb-8 animate-on-scroll leading-relaxed">
+        Uma rede móvel, também conhecida como <strong class="text-white">rede celular</strong>, permite a comunicação sem fio entre muitos usuários finais e em grandes distâncias, transmitindo sinais por meio de ondas de rádio.
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-10">
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#00d4ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">O Chão (Células)</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">A cidade é dividida em "pedaços" chamados células. Cada pedaço tem sua própria antena. Por isso o nome <strong>"Rede Celular"</strong>.</p>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#6c63ff15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">O Ar (Frequências)</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">Em vez de fios, a informação viaja por ondas de rádio em frequências específicas (como as estações de rádio FM, mas muito mais potentes e complexas).</p>
+        </div>
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#4ade8015] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-lg mb-2">O "Cérebro" (Núcleo)</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">Quando você se move, a rede é inteligente o suficiente para passar sua conexão de uma antena para a próxima sem você perceber.</p>
+        </div>
+      </div>
+
+      <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+        <h3 class="font-display font-700 text-white text-2xl mb-6">Por que ela é diferente do Wi-Fi?</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          Muita gente confunde, mas a diferença é a <strong class="text-white">escala:</strong>
+        </p>
+        <ul class="space-y-3">
+          <li class="flex items-start gap-3">
+            <span class="text-[#00d4ff] font-bold mt-1">→</span>
+            <div>
+              <strong class="text-white">Alcance:</strong> <span class="text-gray-400">O Wi-Fi cobre sua sala; a rede móvel cobre países inteiros.</span>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-[#00d4ff] font-bold mt-1">→</span>
+            <div>
+              <strong class="text-white">Propriedade:</strong> <span class="text-gray-400">O Wi-Fi é seu; a rede móvel pertence a uma operadora que aluga o "espaço no ar" do governo.</span>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-[#00d4ff] font-bold mt-1">→</span>
+            <div>
+              <strong class="text-white">Mobilidade:</strong> <span class="text-gray-400">O Wi-Fi não lida bem com você se deslocando a 100 km/h em um carro; a rede móvel foi desenhada exatamente para isso.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== EVOLUÇÃO ======================== -->
+  <section id="evolucao" class="py-32 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-5g px-3 py-1 rounded-full">// 02 — Evolução</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-16 animate-on-scroll">Evolução das <span class="text-[#00d4ff]">Redes Móveis</span></h2>
+
+      <!-- 1G -->
+      <div class="generation-card animate-on-scroll mb-8 border-l-4 border-l-[#ff6b6b]">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="section-label tag-5g px-3 py-1 rounded-full">1G</span>
+          <span class="text-gray-400 font-modal text-sm">Década de 1980</span>
+        </div>
+        <h3 class="font-display font-700 text-white text-2xl mb-4">O Começo: 1G</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          A primeira geração de rede móvel sem fio foi lançada na década de 1980 para uso nos primeiros celulares. A transmissão funcionava de forma <strong class="text-white">analógica</strong>, utilizando sinais de rádio para codificar o áudio, e a tecnologia era limitada a fornecer apenas os <strong class="text-white">serviços de voz</strong> entre aparelhos.
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          Além dessa limitação, o serviço tinha problemas de compatibilidade devido aos diferentes padrões adotados pelos países. Nos Estados Unidos e no Brasil, por exemplo, era utilizado o padrão <strong class="text-white">Advanced Mobile Phone System (AMPS)</strong>. Outros padrões incluíam Nordic Mobile Telephone (NMT), para países nórdicos, e o Total Access Communications Systems (TACS), aplicado no Reino Unido.
+        </p>
+        <div class="bg-[#ff6b6b10] border border-[#ff6b6b30] rounded-xl p-4 mt-4">
+          <p class="text-gray-300 text-lg">
+            O 1G era como um walkie-talkie de luxo. Ele era <strong>caro</strong>, a bateria durava <strong>30 minutos</strong>, o sinal era cheio de <strong>chiado</strong> e, se você passasse por um <strong>túnel</strong>, a conversa sumia no ruído analógico.
+          </p>
+        </div>
+      </div>
+
+      <!-- 2G -->
+      <div class="generation-card animate-on-scroll mb-8 border-l-4 border-l-[#8b5cf6]">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="section-label tag-5g px-3 py-1 rounded-full">2G</span>
+          <span class="text-gray-400 font-modal text-sm">A partir de 1991</span>
+        </div>
+        <h3 class="font-display font-700 text-white text-2xl mb-4">A Revolução Digital: 2G</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          A partir da segunda geração de conexão móvel, chamada de <strong class="text-white">2G</strong>, todo o funcionamento é feito de forma <strong class="text-white">digital</strong>. Dessa forma, permitem várias conversas ao mesmo tempo, sem interferência entre elas. Além da transição para a criptografia digital, o 2G contou com um padrão único, chamado de <strong class="text-white">Global System for Mobile Communication (GSM)</strong>, o que ajudou a resolver os problemas de compatibilidade do 1G.
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed">
+          O 2G, aplicado a partir de 1991, foi importante para distribuir <strong class="text-white">serviços de voz e mensagens de texto</strong>. Havia, também, capacidade para transmissão de dados, mas de forma limitada.
+        </p>
+      </div>
+
+      <!-- 3G -->
+      <div class="generation-card animate-on-scroll mb-8 border-l-4 border-l-[#3b82f6]">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="section-label tag-5g px-3 py-1 rounded-full">3G</span>
+          <span class="text-gray-400 font-modal text-sm">Lançado em 2001</span>
+        </div>
+        <h3 class="font-display font-700 text-white text-2xl mb-4">Era da Internet Móvel: 3G</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          O 3G, lançado em 2001, corresponde à terceira geração de conexão móvel, que <strong class="text-white">consolidou o acesso e a navegação pela internet por celulares</strong>. O enfoque dos novos padrões e tecnologias foi o uso diário de serviços de internet, como a navegação em sites, redes sociais, acesso a e-mails e troca de mensagens.
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          O padrão utilizado foi o <strong class="text-white">Universal Mobile Telecommunication System (UMTS)</strong>, que auxiliou na migração do GSM para o 3G, e foi o primeiro a alcançar a marca de <strong class="text-white">2 megabits por segundo</strong> na taxa de transmissão em dispositivos parados. A implantação do 3G, no entanto, foi um processo demorado em vários países devido ao uso de um espectro de frequência diferente do 2G. A mudança de geração ampliou o acesso à internet móvel, comportando números cada vez maiores de taxas de dados.
+        </p>
+      </div>
+
+      <!-- 4G -->
+      <div class="generation-card animate-on-scroll mb-8 border-l-4 border-l-[#10b981]">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="section-label tag-5g px-3 py-1 rounded-full">4G</span>
+          <span class="text-gray-400 font-modal text-sm">Anunciado em 2010</span>
+        </div>
+        <h3 class="font-display font-700 text-white text-2xl mb-4">A Era do Streaming: 4G</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          Seguindo com a transição entre gerações, o 4G representa a quarta grande fase de tecnologias para a conexão móvel, com <strong class="text-white">avanços significativos na transmissão de dados</strong>. Através do padrão <strong class="text-white">Long Term Evolution (LTE)</strong>, foi anunciada em 2010 e ampliou a velocidade, a capacidade de tráfego e a estabilidade do uso de internet em celulares.
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          O 4G possibilitou usar dados móveis para realizar serviços que, até então, eram limitados à conexão por banda larga fixa. A nova tecnologia permitiu, por exemplo, <strong class="text-white">reproduzir vídeos em alta definição, jogar online e realizar videoconferências</strong> com velocidade e estabilidade que não eram disponibilizadas no 3G. A quarta geração trouxe uma taxa de transmissão que podia atingir até <strong class="text-white">300 Mbps</strong> e é uma rede baseada em protocolo IP, o que aumenta a capacidade de usuários simultâneos.
+        </p>
+      </div>
+
+      <!-- 5G -->
+      <div class="generation-card animate-on-scroll mb-8 border-l-4 border-l-[#00d4ff]">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="section-label tag-5g px-3 py-1 rounded-full">5G</span>
+          <span class="text-gray-400 font-modal text-sm">Atual</span>
+        </div>
+        <h3 class="font-display font-700 text-white text-2xl mb-4">O Presente: 5G</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          A quinta geração procura trazer <strong class="text-white">mais do que aumentar a velocidade</strong>: marcará, também, a <strong class="text-white">conexão sem fio para outros aparelhos</strong>. Os resultados são previstos para uso doméstico, com a ampliação do conceito de casas conectadas; e em serviços industriais, com novas possibilidades de automação e Internet das Coisas (IoT).
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed">
+          O 5G utiliza um padrão chamado de <strong class="text-white">NR</strong>. Em termos de velocidade, estima-se que a marca dos <strong class="text-white">Gigabits por segundo</strong> seja alcançada. Além disso, o 5G terá <strong class="text-white">grande redução da latência</strong>, o que pode permitir atividades à distância em tempo real.
+        </p>
+      </div>
+
+      <!-- 6G -->
+      <div class="generation-card animate-on-scroll border-l-4 border-l-[#6c63ff]">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="section-label tag-5g px-3 py-1 rounded-full">6G</span>
+          <span class="text-gray-400 font-modal text-sm">Próxima década</span>
+        </div>
+        <h3 class="font-display font-700 text-white text-2xl mb-4">O Futuro: 6G</h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-4">
+          A tecnologia 6G, prevista para surgir comercialmente na próxima década, promete avanços ainda maiores em relação ao 5G, como <strong class="text-white">velocidades extremamente elevadas, latência quase instantânea, integração entre inteligência artificial e redes inteligentes, comunicação holográfica e conexão massiva entre dispositivos</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== ENTENDENDO 5G ======================== -->
+  <section id="5g" class="py-32 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-5g px-3 py-1 rounded-full">// 03 — 5G em Profundidade</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-16 animate-on-scroll">Entendendo Melhor o <span class="text-[#00d4ff]">5G</span></h2>
+
+      <!-- Características -->
+      <h3 class="font-display font-700 text-3xl text-white mb-8 animate-on-scroll">Principais Características</h3>
+
+      <div class="space-y-6 mb-16">
+        <!-- Velocidade -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-[#00d4ff15] flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#00d4ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-display font-700 text-white text-xl mb-2">Velocidade e Latência</h4>
+              <p class="text-gray-400 text-lg mb-3">Enquanto o 4G chega a cerca de <strong class="text-white">100 Mbps</strong> na prática, o 5G pode atingir até cerca de <strong class="text-white">1 Gbps a 20 Gbps</strong>.</p>
+              <div class="bg-[#00d4ff10] border border-[#00d4ff20] rounded-lg p-3">
+                <p class="text-gray-300 font-mono text-sm">4G: ~100 Mbps | 5G: 1-20 Gbps</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eficiência -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-[#4ade8015] flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#4ade80]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-display font-700 text-white text-xl mb-2">Eficiência de Espectro e Energia</h4>
+              <p class="text-gray-400 text-lg mb-3">
+                <strong class="text-white">Ondas Milimétricas (mmWave):</strong> O uso de frequências altíssimas (acima de 24 GHz) permite larguras de banda gigantescas, embora o alcance seja curto.
+              </p>
+              <p class="text-gray-400 text-lg">
+                <strong class="text-white">Eficiência Energética:</strong> O 5G foi projetado para que os sensores de IoT (mMTC) consumam pouquíssima energia, permitindo que a bateria de um sensor dure até <strong>10 anos</strong> sem troca.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Network Slicing -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-[#6c63ff15] flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-display font-700 text-white text-xl mb-2">Network Slicing</h4>
+              <p class="text-gray-400 text-lg">
+                O Network Slicing permite que uma operadora crie <strong class="text-white">múltiplas Redes Virtuais Lógicas e independentes</strong> que rodam sobre uma única Infraestrutura Física comum. Diferente das gerações anteriores, onde a rede era "tamanho único" (best-effort), no 5G cada "fatia" (slice) é uma rede fim-a-fim isolada, configurada para atender requisitos específicos de uma aplicação.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIMO -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-[#f59e0b15] flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-display font-700 text-white text-xl mb-2">Massive MIMO e Beamforming</h4>
+              <p class="text-gray-400 text-lg mb-3">Essas duas tecnologias são o segredo para o 5G conseguir entregar tanta velocidade sem que as ondas de rádio se "atropelem".</p>
+              <div class="space-y-3">
+                <div>
+                  <strong class="text-white">No 4G:</strong> <span class="text-gray-400">As antenas costumam ter cerca de 4 a 8 transmissores e receptores.</span>
+                </div>
+                <div>
+                  <strong class="text-white">No 5G (Massive):</strong> <span class="text-gray-400">Uma única torre pode ter 64, 128 ou até mais mini-antenas integradas.</span>
+                </div>
+              </div>
+              <div class="bg-[#f59e0b10] border border-[#f59e0b20] rounded-lg p-4 mt-4">
+                <p class="text-gray-300 text-sm italic">
+                  <strong class="text-white">Analogia:</strong> Imagine uma rodoviária. O 4G tem 4 guichês de atendimento. Se chegar muita gente, a fila trava. <strong>O Massive MIMO é como uma rodoviária com 128 guichês funcionando ao mesmo tempo.</strong> Ele permite que a rede converse com centenas de dispositivos simultaneamente sem perder o fôlego.
+                </p>
+              </div>
+              <p class="text-gray-400 text-sm mt-4">
+                <strong class="text-white">Beamforming:</strong> Através de algoritmos avançados, a antena identifica onde o seu celular está e "mira" o sinal diretamente para você, como se fosse um feixe de laser — evitando desperdício de energia e ruído.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Como funciona na prática -->
+      <h3 class="font-display font-700 text-3xl text-white mb-8 animate-on-scroll">Como o 5G Funciona na Prática</h3>
+
+      <div class="space-y-6 mb-16">
+        <!-- ERB e Small Cells -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <h4 class="font-display font-700 text-white text-xl mb-4">Estações Rádio Base e Antenas (Small Cells)</h4>
+          <p class="text-gray-400 text-lg mb-4">As antenas são os pontos de contato com o usuário. No 5G, elas mudaram de formato:</p>
+          <div class="space-y-4">
+            <div class="bg-[#6c63ff10] border border-[#6c63ff20] rounded-lg p-4">
+              <p class="font-display font-700 text-white mb-1">Estações Rádio Base (ERBs)</p>
+              <p class="text-gray-400">São aquelas torres grandes que já conhecemos. No 5G, elas ganharam o Massive MIMO (aqueles painéis cheios de mini-antenas) para aguentar muita gente conectada.</p>
+            </div>
+            <div class="bg-[#00d4ff10] border border-[#00d4ff20] rounded-lg p-4">
+              <p class="font-display font-700 text-white mb-1">Small Cells (Pequenas Células)</p>
+              <p class="text-gray-400">São a grande novidade. Como o sinal de alta velocidade do 5G é curto, instalamos mini-antenas (do tamanho de uma caixa de som) em postes, semáforos e fachadas de prédios.</p>
+            </div>
+          </div>
+          <div class="bg-[#4ade8010] border border-[#4ade8020] rounded-lg p-4 mt-4">
+            <p class="text-gray-300 text-sm italic">
+              <strong class="text-white">Analogia:</strong> Se as torres grandes são "lâmpadas de teto" que iluminam o bairro todo, as small cells são "abajures" espalhados para iluminar cada cantinho onde a luz principal não chega.
+            </p>
+          </div>
+        </div>
+
+        <!-- Core da rede -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <h4 class="font-display font-700 text-white text-xl mb-4">Core da Rede</h4>
+          <p class="text-gray-400 text-lg mb-4">
+            O Core é a parte central e inteligente que fica escondida nos prédios das operadoras (Data Centers). É ele quem gerencia tudo. <strong class="text-white">No 5G, o Core é especial por ser 100% baseado em software.</strong>
+          </p>
+          <div class="bg-[#111118] border border-[#1e1e2e] rounded-lg p-4 mb-4 space-y-2">
+            <p class="text-white font-display font-700">O que ele faz:</p>
+            <ul class="text-gray-400 text-lg space-y-1">
+              <li class="flex items-start gap-2"><span class="text-[#00d4ff]">→</span> Autentica quem é você (segurança).</li>
+              <li class="flex items-start gap-2"><span class="text-[#00d4ff]">→</span> Gerencia o Network Slicing (decide qual "fatia" você vai usar).</li>
+              <li class="flex items-start gap-2"><span class="text-[#00d4ff]">→</span> Encaminha seus dados para a internet.</li>
+            </ul>
+          </div>
+          <p class="text-gray-400 text-lg">
+            <strong class="text-white">A Mudança Técnica:</strong> No 4G, o Core usava caixas de hardware pesadas. No 5G, ele usa Nuvem e Virtualização. É como se o "cérebro" da rede fosse um aplicativo rodando em servidores potentes, o que permite criar funções novas em minutos, sem precisar trocar cabos.
+          </p>
+        </div>
+
+        <!-- Network Slicing na prática -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <h4 class="font-display font-700 text-white text-xl mb-4">Network Slicing em Ação</h4>
+          <div class="bg-[#6c63ff10] border border-[#6c63ff20] rounded-lg p-4 mb-4">
+            <p class="text-gray-300 text-lg italic mb-2">
+              <strong class="text-white">Analogia da Rodovia:</strong>
+            </p>
+            <p class="text-gray-300">
+              Imagine uma rodovia de 10 faixas. No 4G, todos os veículos (motos, carros, caminhões e ambulâncias) disputam as mesmas faixas. Se houver trânsito, <strong>a ambulância fica presa.</strong> No 5G com Network Slicing, nós pintamos <strong>faixas exclusivas:</strong> uma faixa VIP onde só passam ambulâncias, uma faixa larga para caminhões de carga e faixas comuns para carros. <strong>Mesmo que a faixa dos carros pare, a da ambulância continua fluindo a 100km/h.</strong>
+            </p>
+          </div>
+          <h5 class="font-display font-700 text-white text-lg mb-4">Como essa divisão funciona:</h5>
+          <div class="space-y-3">
+            <div class="bg-[#8b5cf615] border border-[#8b5cf6] rounded-lg p-4">
+              <p class="font-mono text-[#a78bfa] font-bold text-sm mb-1">FATIA URLLC</p>
+              <p class="text-gray-400">Foca na rapidez da entrega. Tem prioridade total mesmo em rede congestionada. Usada em carros autônomos, onde o tempo de resposta precisa ser quase instantâneo.</p>
+            </div>
+            <div class="bg-[#00d4ff15] border border-[#00d4ff] rounded-lg p-4">
+              <p class="font-mono text-[#00d4ff] font-bold text-sm mb-1">FATIA eMBB</p>
+              <p class="text-gray-400">Foca em levar uma grande quantidade de uma só vez. Pode demorar um pouco, mas chega com grande volume. Usada ao assistir Netflix 4K ou baixar jogos pesados.</p>
+            </div>
+            <div class="bg-[#4ade8015] border border-[#4ade80] rounded-lg p-4">
+              <p class="font-mono text-[#4ade80] font-bold text-sm mb-1">FATIA mMTC</p>
+              <p class="text-gray-400">Milhares de pequenas entregas. Usada em sensores (ex: lixeiras inteligentes). O dado é minúsculo e pode esperar segundos. O foco é bateria durando anos.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== APLICAÇÕES ======================== -->
+  <section id="aplicacoes" class="py-32 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-mobile px-3 py-1 rounded-full">// 04 — Aplicações</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-16 animate-on-scroll">Aplicações do <span class="text-[#00d4ff]">5G</span></h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Indústria 4.0 -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#f59e0b15] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-9"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-2xl mb-4">Indústria 4.0</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">
+            Na área industrial, o 5G impulsiona o conceito de <strong class="text-white">Indústria 4.0</strong>, permitindo a integração entre máquinas, robôs e sistemas inteligentes em tempo real. Sensores instalados em equipamentos podem <strong class="text-white">identificar falhas antes que ocorram</strong>, reduzindo custos com manutenção e aumentando a produtividade. Linhas de produção automatizadas dependem dessa conectividade para operar com maior precisão e segurança.
+          </p>
+        </div>
+
+        <!-- Saúde -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#10b98115] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-2xl mb-4">Saúde e Telemedicina</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">
+            O setor da saúde é amplamente beneficiado. Com a <strong class="text-white">baixa latência do 5G</strong>, torna-se possível ampliar serviços de <strong class="text-white">telemedicina, monitoramento remoto de pacientes</strong> e utilização de equipamentos médicos conectados. Em cenários avançados, a tecnologia pode auxiliar <strong class="text-white">procedimentos cirúrgicos remotos</strong> com alta precisão e confiabilidade.
+          </p>
+        </div>
+
+        <!-- Cidades Inteligentes -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#8b5cf615] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a78bfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-2xl mb-4">Cidades Inteligentes</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">
+            Outra aplicação relevante está nas <strong class="text-white">cidades inteligentes</strong>, onde sensores conectados monitoram <strong class="text-white">iluminação pública, trânsito, coleta de lixo, enchentes e segurança urbana</strong>. Em cidades como Salvador, por exemplo, soluções desse tipo podem contribuir para uma <strong class="text-white">gestão pública mais eficiente</strong> e orientada por dados.
+          </p>
+        </div>
+
+        <!-- Entretenimento -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-8 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-[#f53e6615] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#ff6b6b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-display font-700 text-white text-2xl mb-4">Entretenimento</h3>
+          <p class="text-gray-400 text-lg leading-relaxed">
+            Streaming de vídeos em <strong class="text-white">8K, realidade aumentada, jogos multiplayer</strong> com latência imperceptível e experiências de realidade virtual totalmente imersivas tornam-se possíveis com 5G.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== VANTAGENS E DESVANTAGENS ======================== -->
+  <section id="vantagens" class="py-32 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-5g px-3 py-1 rounded-full">// 05 — Análise</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-16 animate-on-scroll">Vantagens e <span class="text-[#00d4ff]">Desvantagens</span></h2>
+
+      <div class="grid md:grid-cols-2 gap-8 mb-16">
+        <!-- Vantagens -->
+        <div class="animate-on-scroll">
+          <div class="flex items-center gap-2 mb-6">
+            <span class="text-2xl text-[#4ade80]">✓</span>
+            <h3 class="font-display font-700 text-white text-2xl">Vantagens do 5G</h3>
+          </div>
+          <div class="space-y-4">
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#4ade80]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Alta Velocidade</h4>
+              <p class="text-gray-400 text-lg">Downloads e uploads muito mais rápidos, melhorando a experiência em streaming de vídeos em alta definição, jogos online e videoconferências.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#4ade80]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Baixa Latência</h4>
+              <p class="text-gray-400 text-lg">Tempo de resposta muito menor, fundamental para veículos autônomos, robótica industrial, telemedicina e automação avançada.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#4ade80]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Maior Capacidade</h4>
+              <p class="text-gray-400 text-lg">Milhares de dispositivos conectados simultâneos sem comprometer desempenho, essencial para IoT e ambientes com grande concentração de usuários.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#4ade80]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Eficiência Energética</h4>
+              <p class="text-gray-400 text-lg">Sensores IoT que podem operar por longos períodos com consumo mínimo de bateria, reduzindo custos operacionais.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#4ade80]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Network Slicing</h4>
+              <p class="text-gray-400 text-lg">Criação de redes virtuais especializadas para garantir qualidade e prioridade de cada serviço (saúde, indústria, público geral).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desvantagens -->
+        <div class="animate-on-scroll">
+          <div class="flex items-center gap-2 mb-6">
+            <span class="text-2xl text-[#f87171]">✗</span>
+            <h3 class="font-display font-700 text-white text-2xl">Desvantagens do 5G</h3>
+          </div>
+          <div class="space-y-4">
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#f87171]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Alto Custo</h4>
+              <p class="text-gray-400 text-lg">Necessidade de novas antenas, modernização de equipamentos e investimentos elevados por parte das operadoras e poder público.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#f87171]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Cobertura Limitada</h4>
+              <p class="text-gray-400 text-lg">Expansão mais lenta em áreas rurais e afastadas dos grandes centros urbanos, ampliando desigualdade digital.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#f87171]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Necessidade de Aparelhos Compatíveis</h4>
+              <p class="text-gray-400 text-lg">Usuários com smartphones antigos precisam adquirir dispositivos modernos para aproveitar a nova tecnologia.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#f87171]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Alcance Limitado em Altas Frequências</h4>
+              <p class="text-gray-400 text-lg">Frequências mais altas têm menor alcance e dificuldade de atravessar obstáculos (paredes, edifícios), exigindo mais antenas.</p>
+            </div>
+            <div class="card-hover bg-[#111118] rounded-xl p-6 border-l-4 border-l-[#f87171]">
+              <h4 class="font-display font-700 text-white text-lg mb-2">Segurança Digital</h4>
+              <p class="text-gray-400 text-lg">Aumento de dispositivos conectados amplia a superfície de ataques cibernéticos, exigindo investimentos constantes em proteção.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6G -->
+      <div class="card-hover bg-[#111118] rounded-2xl p-10 animate-on-scroll border-t-4 border-t-[#6c63ff]">
+        <h3 class="font-display font-700 text-white text-3xl mb-6">O Futuro: Desafios do <span class="text-[#6c63ff]">6G</span></h3>
+        <p class="text-gray-400 text-lg leading-relaxed mb-6">
+          Para que as promessas do 6G se tornem realidade, diversos desafios tecnológicos, econômicos e sociais ainda precisam ser superados:
+        </p>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-[#6c63ff10] border border-[#6c63ff20] rounded-lg p-6">
+            <h4 class="font-display font-700 text-white mb-2">Infraestrutura</h4>
+            <p class="text-gray-400">Novas antenas, modernização de equipamentos e grandes investimentos em fibra óptica e data centers — lento e custoso especialmente em países em desenvolvimento.</p>
+          </div>
+          <div class="bg-[#6c63ff10] border border-[#6c63ff20] rounded-lg p-6">
+            <h4 class="font-display font-700 text-white mb-2">Frequências Extremas</h4>
+            <p class="text-gray-400">Ondas sub-terahertz e terahertz têm grande capacidade mas menor alcance e sensibilidade a obstáculos, chuva e interferências.</p>
+          </div>
+          <div class="bg-[#6c63ff10] border border-[#6c63ff20] rounded-lg p-6">
+            <h4 class="font-display font-700 text-white mb-2">Eficiência Energética</h4>
+            <p class="text-gray-400">Bilhões de dispositivos requerem otimização com IA para reduzir consumo de energia em antenas, servidores e equipamentos.</p>
+          </div>
+          <div class="bg-[#6c63ff10] border border-[#6c63ff20] rounded-lg p-6">
+            <h4 class="font-display font-700 text-white mb-2">Inclusão Digital</h4>
+            <p class="text-gray-400">Risco de apenas centros urbanos terem acesso inicial ao 6G, ampliando desigualdade. É necessário garantir acesso equilibrado.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== FOOTER ======================== -->
+  <footer class="border-t border-[#1e1e2e] py-16 bg-[#0a0a0f]/50 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-10 mb-10">
+        <div>
+          <h4 class="font-display font-700 text-white mb-4">Navegação</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="#contexto" class="hover:text-white transition">Contexto</a></li>
+            <li><a href="#evolucao" class="hover:text-white transition">Evolução</a></li>
+            <li><a href="#5g" class="hover:text-white transition">5G</a></li>
+            <li><a href="#aplicacoes" class="hover:text-white transition">Aplicações</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-display font-700 text-white mb-4">Referências</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="#" class="hover:text-white transition">3GPP Standards</a></li>
+            <li><a href="#" class="hover:text-white transition">ITU-R</a></li>
+            <li><a href="#" class="hover:text-white transition">IEEE 802.11</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-display font-700 text-white mb-4">Documentos</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="#" class="hover:text-white transition">RFC 7230</a></li>
+            <li><a href="#" class="hover:text-white transition">5G Standards</a></li>
+            <li><a href="#" class="hover:text-white transition">Technical Specs</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-display font-700 text-white mb-4">Autores</h4>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Andrei Carvalho<br/>
+            João Pedro Bastian<br/>
+            Tífani Sá dos Santos
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-[#1e1e2e] pt-8 flex flex-col md:flex-row items-center justify-between text-gray-400 text-sm">
+        <p>© 2026 Redes Móveis — 5G. Todos os direitos reservados.</p>
+        <div class="flex items-center gap-6 mt-4 md:mt-0">
+          <a href="/" class="hover:text-white transition">← Voltar ao Início</a>
+          <a href="" class="hover:text-white transition">Reportar Erro</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    function toggleMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('#mobile-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+    });
+
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observe all elements with animate-on-scroll class
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Smooth scroll behavior for modern browsers
+    document.documentElement.style.scrollBehavior = 'smooth';
+  </script>
+</body>
+</html>
