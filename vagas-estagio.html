@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vagas de Estágio - TI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            bg: '#0a0a0f',
+            surface: '#111118',
+            card: '#16161f',
+            border: '#1e1e2e',
+            accent: '#6c63ff',
+            accent2: '#00d4ff',
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.7s ease forwards',
+            'pulse-slow': 'pulse 3s infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0a0a0f; font-family: 'Syne', sans-serif; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #6c63ff55; border-radius: 3px; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .glow-text { text-shadow: 0 0 60px #6c63ff55; }
+    .glow-green { text-shadow: 0 0 40px #10b98144; }
+
+    .card-hover {
+      transition: all 0.3s ease;
+      border: 1px solid #1e1e2e;
+    }
+    .card-hover:hover {
+      border-color: #10b98155;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px #10b98115;
+    }
+
+    .gradient-border {
+      position: relative;
+    }
+    .gradient-border::before {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      z-index: -1;
+    }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(#1e1e2e22 1px, transparent 1px),
+        linear-gradient(90deg, #1e1e2e22 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, #10b981, #06b6d4);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    .tag-vagas { background: #10b981/10; color: #6ee7b7; border: 1px solid #10b981/30; }
+    .tag-frontend { background: #3b82f6/10; color: #60a5fa; border: 1px solid #3b82f6/30; }
+    .tag-backend { background: #8b5cf6/10; color: #a78bfa; border: 1px solid #8b5cf6/30; }
+    .tag-devops { background: #f59e0b/10; color: #fbbf24; border: 1px solid #f59e0b/30; }
+    .tag-mobile { background: #06b6d4/10; color: #06b6d4; border: 1px solid #06b6d4/30; }
+    .tag-fullstack { background: #ec4899/10; color: #f472b6; border: 1px solid #ec4899/30; }
+
+    .job-card {
+      position: relative;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #1e1e2e;
+      background: #111118;
+      transition: all 0.3s ease;
+    }
+    .job-card:hover {
+      border-color: #10b98155;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px #10b98115;
+    }
+
+    .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
+    .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body class="text-gray-200 relative">
+
+  <!-- ======================== NAVBAR ======================== -->
+  <nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#0a0a0f]/80 border-b border-[#1e1e2e]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#10b981] to-[#06b6d4] flex items-center justify-center text-white font-mono text-xs font-bold">
+          JOB
+        </div>
+        <span class="font-display font-700 text-white text-lg tracking-tight">Vagas de <span class="text-[#10b981]">Estágio</span></span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#vagas"    class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Vagas</a>
+        <a href="index.html" class="nav-link text-gray-400 hover:text-white text-sm font-display font-600 transition-colors">Home</a>
+      </div>
+      <!-- Mobile menu button -->
+      <button onclick="toggleMenu()" class="md:hidden text-gray-400 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col gap-3 border-t border-[#1e1e2e] pt-4">
+      <a href="#vagas"      onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Vagas</a>
+      <a href="index.html"   onclick="toggleMenu()" class="text-gray-400 hover:text-white text-sm font-display transition-colors">Home</a>
+    </div>
+  </nav>
+
+  <!-- ======================== HERO ======================== -->
+  <section id="hero" class="hero-grid min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+    <!-- Glow blobs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#10b981] opacity-5 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#06b6d4] opacity-5 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style="animation-delay:1.5s"></div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#1e1e2e] bg-[#111118] mb-8">
+        <span class="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+        <span class="section-label text-gray-400">Carreiras — Oportunidades</span>
+      </div>
+
+      <h1 class="font-display font-800 text-5xl md:text-7xl text-white leading-none tracking-tight mb-6 glow-text">
+        Vagas de<br/>
+        <span class="bg-gradient-to-r from-[#10b981] to-[#06b6d4] bg-clip-text text-transparent">Estágio em TI</span>
+      </h1>
+
+      <p class="text-white text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        Um espaço criado para conectar os alunos de <strong class="text-[#10b981]">BSI da UNIME</strong> a oportunidades de estágio e vagas na área de <strong class="text-[#10b981]">tecnologia</strong>.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#vagas" class="gradient-border rounded-xl px-8 py-3 font-display font-700 text-white bg-[#111118] hover:bg-[#16161f] transition-all duration-300 hover:scale-105 inline-block">
+          Ver Vagas →
+        </a>
+        <a href="#requisitos" class="px-8 py-3 font-display font-700 text-gray-400 hover:text-white border border-[#1e1e2e] hover:border-[#10b98155] rounded-xl transition-all duration-300 inline-block">
+          Leia os Requisitos
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================== VAGAS ======================== -->
+  <section id="vagas" class="py-32 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-4 animate-on-scroll">
+        <span class="section-label tag-vagas px-3 py-1 rounded-full">// 01 — Vagas Abertas</span>
+      </div>
+      <h2 class="font-display font-800 text-4xl md:text-5xl text-white mb-16 animate-on-scroll">Posições <span class="text-[#10b981]">Disponíveis</span></h2>
+
+      <div id="vagas-container" class="space-y-6">
+        <!-- Carregando vagas dynamicamente via JavaScript -->
+        <div class="text-center py-12">
+          <div class="inline-block animate-spin">
+            <div class="w-8 h-8 border-4 border-[#10b981]/30 border-t-[#10b981] rounded-full"></div>
+          </div>
+          <p class="text-gray-400 mt-4">Carregando vagas de estágio...</p>
+        </div>
+      </div>
+
+      <!-- Elemento oculto para fallback se houver problema -->
+      <div style="display:none;" id="vagas-error" class="text-center py-12">
+        <p class="text-gray-400">Desculpe, não conseguimos carregar as vagas no momento.</p>
+        <p class="text-gray-500 text-sm mt-2">Por favor, tente novamente mais tarde.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== FOOTER ======================== -->
+  <footer class="border-t border-[#1e1e2e] py-12 relative">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-12 mb-8">
+        <div>
+          <h3 class="font-display font-700 text-white text-lg mb-4">Sobre</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Um espaço criado para conectar os alunos de BSI da UNIME a oportunidades de estágio e vagas na área de tecnologia.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-display font-700 text-white text-lg mb-4">Navegação</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+            <li><a href="#vagas" class="text-gray-400 hover:text-white transition-colors">Vagas</a></li>
+            <li><a href="index.html#redes" class="text-gray-400 hover:text-white transition-colors">Redes de Computadores</a></li>
+            <li><a href="index.html#segundo-bimestre" class="text-gray-400 hover:text-white transition-colors">Trabalhos</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-display font-700 text-white text-lg mb-4">Guias &amp; Recursos</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="guia-telnet-ssh.html" class="text-gray-400 hover:text-white transition-colors">Telnet & SSH</a></li>
+            <li><a href="guia-ftp.html" class="text-gray-400 hover:text-white transition-colors">FTP & SFTP</a></li>
+            <li><a href="guia-ipv4-ipv6.html" class="text-gray-400 hover:text-white transition-colors">IPv4 & IPv6</a></li>
+            <li><a href="guia_5G.html" class="text-gray-400 hover:text-white transition-colors">5G & Redes Móveis</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-display font-700 text-white text-lg mb-4">Oportunidades</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#vagas" class="text-gray-400 hover:text-white transition-colors">Vagas Abertas</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="h-px bg-gradient-to-r from-transparent via-[#1e1e2e] to-transparent mb-8"></div>
+      <p class="text-center text-gray-500 text-xs">
+        Projeto acadêmico desenvolvido pela aluna Tífani Sá no âmbito da disciplina de Redes de Computadores.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Script para carregar vagas do Google Sheets -->
+  <script>
+    /**
+     * Script Vanilla JS para carregar vagas da planilha Google Sheets publicada como CSV
+     * 
+     * Estrutura esperada da planilha:
+     * - Carimbo de data/hora
+     * - Título da vaga
+     * - Área de trabalho
+     * - Link da vaga
+     */
+
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTa9F_bceTzOpEhEkfR5u45A5dILqdOoLATEmlVJ436uA5pLjlfpAgw5-Q7uKbZogVF143G4pvVBWOi/pub?output=csv';
+    const container = document.getElementById('vagas-container');
+    const errorDiv = document.getElementById('vagas-error');
+
+    /**
+     * Faz o parse manual de uma linha CSV, respeitando aspas duplas
+     * @param {string} line - Linha do CSV
+     * @returns {array} Array com os valores da linha
+     */
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"') {
+          // Se está dentro de aspas e próximo char é aspas, é um escape
+          if (insideQuotes && nextChar === '"') {
+            current += '"';
+            i++; // Pula a próxima aspas
+          } else {
+            // Alterna estado de dentro/fora de aspas
+            insideQuotes = !insideQuotes;
+          }
+        } else if (char === ',' && !insideQuotes) {
+          // Separador de colunas (apenas fora de aspas)
+          result.push(current);
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      // Adiciona o último valor
+      result.push(current);
+      return result;
+    }
+
+    /**
+     * Escapa caracteres HTML para prevenir injeção XSS
+     * @param {string} text - Texto a ser escapado
+     * @returns {string} Texto escapado
+     */
+    function escapeHTML(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return String(text || '').replace(/[&<>"']/g, char => map[char]);
+    }
+
+    /**
+     * Determina a classe/tag para a área de trabalho
+     * @param {string} area - Área de trabalho
+     * @returns {string} Classe CSS correspondente
+     */
+    function getAreaTagClass(area) {
+      const areaLower = (area || '').toLowerCase().trim();
+      
+      if (areaLower.includes('frontend')) {
+        return 'tag-frontend';
+      } else if (areaLower.includes('backend')) {
+        return 'tag-backend';
+      } else if (areaLower.includes('devops') || areaLower.includes('dev ops')) {
+        return 'tag-devops';
+      } else if (areaLower.includes('mobile') || areaLower.includes('ios') || areaLower.includes('android')) {
+        return 'tag-mobile';
+      } else if (areaLower.includes('full stack') || areaLower.includes('fullstack')) {
+        return 'tag-fullstack';
+      } else if (areaLower.includes('data')) {
+        return 'bg-[#ec4899]/20 text-[#f472b6]';
+      } else if (areaLower.includes('cloud')) {
+        return 'bg-[#06b6d4]/20 text-[#22d3ee]';
+      } else {
+        return 'bg-[#6c63ff]/20 text-[#b4a7ff]';
+      }
+    }
+
+    /**
+     * Cria um card de vaga em HTML
+     * @param {object} vaga - Objeto com os dados da vaga
+     * @returns {string} HTML do card
+     */
+    function createJobCard(vaga) {
+      const tagClass = getAreaTagClass(vaga.area);
+      const tituloHTML = escapeHTML(vaga.titulo);
+      const areaHTML = escapeHTML(vaga.area);
+      const linkHTML = escapeHTML(vaga.link);
+      const dataHTML = escapeHTML(vaga.data);
+      const descricaoHTML = escapeHTML(vaga.descricao);
+
+      return `
+        <div class="job-card animate-on-scroll">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="${tagClass} px-2 py-1 rounded text-xs font-semibold">${areaHTML}</span>
+                <span class="text-[#9ca3af] font-mono text-sm">${dataHTML}</span>
+              </div>
+              <h3 class="font-display font-700 text-white text-xl">${tituloHTML}</h3>
+            </div>
+            <a href="${linkHTML}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg bg-[#10b981]/10 text-[#6ee7b7] border border-[#10b981]/30 hover:bg-[#10b981]/20 transition-all whitespace-nowrap font-semibold text-sm">
+              Acessar Vaga
+            </a>
+          </div>
+          ${descricaoHTML ? `<p class="text-gray-400 text-sm leading-relaxed mb-3">${descricaoHTML}</p>` : ''}
+        </div>
+      `;
+    }
+
+    /**
+     * Carrega e processa as vagas da planilha Google Sheets
+     */
+    async function loadVagasFromGoogleSheets() {
+      try {
+        // Busca o CSV do Google Sheets
+        const response = await fetch(CSV_URL);
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
+        const csvText = await response.text();
+        const lines = csvText.trim().split('\n');
+
+        // Valida se há pelo menos cabeçalho e uma linha de dados
+        if (lines.length < 2) {
+          container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhuma vaga disponível no momento.</p>';
+          return;
+        }
+
+        // Parse do cabeçalho (primeira linha)
+        const headerLine = lines[0];
+        const headers = parseCSVLine(headerLine).map(h => h.trim().toLowerCase());
+        
+        // Encontra os índices das colunas esperadas
+        const dataIndex = headers.findIndex(h => h.includes('carimbo') || h.includes('data') || h.includes('timestamp'));
+        const tituloIndex = headers.findIndex(h => h.includes('título'));
+        const areaIndex = headers.findIndex(h => h.includes('área') || h.includes('area'));
+        const descricaoIndex = headers.findIndex(h => h.includes('descrição') || h.includes('descricao') || h.includes('description'));
+        const linkIndex = headers.findIndex(h => h.includes('link'));
+
+        // Valida se as colunas obrigatórias foram encontradas
+        if (tituloIndex === -1 || areaIndex === -1 || linkIndex === -1) {
+          console.error('Colunas esperadas não encontradas. Headers encontrados:', headers);
+          throw new Error('Formato da planilha inválido');
+        }
+
+        // Parse das linhas de dados (ignorando o cabeçalho)
+        const vagas = [];
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          
+          // Pula linhas vazias
+          if (line === '') continue;
+
+          const values = parseCSVLine(line);
+          
+          // Valida se a linha tem dados suficientes
+          if (values.length > Math.max(tituloIndex, areaIndex, linkIndex)) {
+            const vaga = {
+              data: dataIndex !== -1 ? values[dataIndex].trim() : '',
+              titulo: values[tituloIndex].trim(),
+              area: values[areaIndex].trim(),
+              descricao: descricaoIndex !== -1 ? values[descricaoIndex].trim() : '',
+              link: values[linkIndex].trim()
+            };
+
+            // Valida se a vaga tem o mínimo de dados
+            if (vaga.titulo && vaga.area && vaga.link) {
+              vagas.push(vaga);
+            }
+          }
+        }
+
+        // Valida se há vagas para exibir
+        if (vagas.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhuma vaga disponível no momento.</p>';
+          return;
+        }
+
+        // Gera o HTML para cada vaga e insere no container
+        let html = '';
+        vagas.forEach(vaga => {
+          html += createJobCard(vaga);
+        });
+
+        container.innerHTML = html;
+
+        // Observa os novos cards para animações de scroll
+        if (typeof observer !== 'undefined') {
+          document.querySelectorAll('#vagas-container .job-card').forEach(card => {
+            observer.observe(card);
+          });
+        }
+
+      } catch (error) {
+        console.error('Erro ao carregar vagas:', error);
+        container.style.display = 'none';
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    // Executa o carregamento das vagas quando o DOM estiver pronto
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadVagasFromGoogleSheets);
+    } else {
+      // Se o DOM já foi carregado, executa imediatamente
+      loadVagasFromGoogleSheets();
+    }
+  </script>
+
+  <script>
+    // Mobile menu toggle
+    function toggleMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('#mobile-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('mobile-menu').classList.add('hidden');
+      });
+    });
+
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observe all elements with animate-on-scroll class
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Smooth scroll behavior for modern browsers
+    document.documentElement.style.scrollBehavior = 'smooth';
+  </script>
+</body>
+</html>
