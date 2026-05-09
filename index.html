@@ -120,6 +120,7 @@
     .tag-ipv6 { background: #d946ef/10; color: #f0abfc; border: 1px solid #d946ef/30; }
     .tag-5g { background: #00d4ff/10; color: #00d4ff; border: 1px solid #00d4ff/30; }
     .tag-vpn { background: #f97316/10; color: #fb923c; border: 1px solid #f97316/30; }
+    .tag-cloud { background: #06b6d4/10; color: #06b6d4; border: 1px solid #06b6d4/30; }
 
     .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
     .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
@@ -457,7 +458,7 @@
       </p>
 
       <!-- Grid de Trabalhos -->
-      <div class="grid md:grid-cols-2 gap-6 animate-on-scroll">
+      <div class="grid md:grid-cols-3 gap-6 animate-on-scroll">
                <!-- 5G & Redes Móveis -->
         <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00d4ff] to-[#6c63ff] flex items-center justify-center mb-5">
@@ -495,6 +496,25 @@
           </div>
           <a href="arquivos-de-projetos/VPN/Arquitetura_de_Redes_VPN.pdf" target="_blank" class="inline-block mt-3 text-[#fb923c] text-xs font-semibold hover:underline">Ver guia completo →</a> <br> 
           <a href="arquivos-de-projetos/VPN/VPN.pdf" target="_blank" class="inline-block mt-3 text-[#fb923c] text-xs font-semibold hover:underline">Entender funcionamento do VPN →</a>
+        </div>
+
+        <!-- Cloud Workshop -->
+        <div class="card-hover bg-[#111118] rounded-2xl p-7 animate-on-scroll">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#0891b2] flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.051A4.002 4.002 0 003 15z"/>
+            </svg>
+          </div>
+          <span class="tag-cloud px-2 py-1 rounded text-xs mb-3 inline-block">Cloud Computing</span>
+          <h3 class="font-display font-700 text-white text-xl mb-2">Cloud Workshop</h3>
+          <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+            Workshop prático sobre computação em nuvem, arquitetura de sistemas distribuídos e soluções cloud modernas para empresas.
+          </p>
+          <div class="text-xs text-gray-500">
+            <p><span class="font-semibold">Tópicos:</span> AWS, Azure, GCP</p>
+            <p><span class="font-semibold">Função:</span> Computação em nuvem</p>
+          </div>
+          <a href="arquivos-de-projetos/CLOUD_WORKSHOP%20VERS%C3%83O%203.5.pdf" target="_blank" class="inline-block mt-3 text-[#06b6d4] text-xs font-semibold hover:underline">Ver documento completo →</a>
         </div>
     </div>
   </section>
@@ -539,6 +559,7 @@
             <li><a href="guia-ipv4-ipv6.html" class="text-gray-400 hover:text-white transition-colors">IPv4 & IPv6</a></li>
             <li><a href="guia_5G.html" class="text-gray-400 hover:text-white transition-colors">5G & Redes Móveis</a></li>
             <li><a href="arquivos-de-projetos/VPN/VPN.pdf" target="_blank" class="text-gray-400 hover:text-white transition-colors">VPN</a></li>
+            <li><a href="arquivos-de-projetos/CLOUD_WORKSHOP%20VERS%C3%83O%203.5.pdf" target="_blank" class="text-gray-400 hover:text-white transition-colors">Cloud Workshop</a></li>
             <li><a href="referencias.html" class="text-gray-400 hover:text-white transition-colors">Referências</a></li>
           </ul>
         </div>
